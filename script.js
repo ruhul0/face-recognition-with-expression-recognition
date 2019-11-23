@@ -2,11 +2,11 @@ const imageUpload = document.getElementById('imageUpload') //assigning the uploa
 
 //adding models
 Promise.all([
-  faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
-  faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-  faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
-  faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-  faceapi.nets.faceExpressionNet.loadFromUri('/models')
+  faceapi.nets.faceRecognitionNet.loadFromUri('/f/models'),
+  faceapi.nets.faceLandmark68Net.loadFromUri('/f/models'),
+  faceapi.nets.ssdMobilenetv1.loadFromUri('/f/models'),
+  faceapi.nets.tinyFaceDetector.loadFromUri('/f/models'),
+  faceapi.nets.faceExpressionNet.loadFromUri('/f/models')
 ]).then(start)
 
 //function start 
@@ -20,6 +20,13 @@ async function start() {
   let canvas
   let name
   let expression
+  let angry
+  let disgusted
+  let fearful
+  let happy
+  let neutral
+  let sad
+  let surprised
   document.body.append('Loaded')
   imageUpload.addEventListener('change', async () => {
     if (image) image.remove()
@@ -47,7 +54,7 @@ async function start() {
     //console.log(resizedDetections2[0].expressions)
     resizedDetections2.forEach((result2,i) => {
       //console.log(resizedDetections2[i])
-      console.log(result2.expressions) //showing the expressions result in console
+      //console.log(result2.expressions) //showing the expressions result in console
       expression = result2.expressions
     }
     )
@@ -56,8 +63,18 @@ async function start() {
     faceapi.draw.drawFaceLandmarks(canvas, resizedDetections2)
     faceapi.draw.drawFaceExpressions(canvas, resizedDetections2)
     //const results2 = resizedDetections2.map(d => faceMatcher.findBestMatch(d.descriptor))
-    expression = resizedDetections2[0].expressions
+    //expression = resizedDetections2[0].expressions
     //insert(name,expression)
+    console.log(expression)
+    angry = expression.angry
+    disgusted = expression.disgusted
+    fearful = expression.fearful
+    happy = expression.happy
+    neutral = expression.neutral
+    sad = expression.sad
+    surprised = expression.surprised
+
+    insert(name,angry,disgusted,fearful,happy,neutral,sad,surprised)
   })
 }
 
@@ -78,22 +95,29 @@ function loadLabeledImages() {
   )
 }
 //api call to pass data to php page
-function insert(name,expression) {
-  $.ajax({
+//function insert(name,expression) {
+  function insert(name,angry,disgusted,fearful,happy,neutral,sad,surprised) {
+$.ajax({
   type: 'POST',
   url: 'insert.php',
   data: {
       name:name,
-      expression:expression
+      angry:angry,
+      disgusted:disgusted,
+      fearful:fearful,
+      happy:happy,
+      neutral:neutral,
+      sad:sad,
+      surprised:surprised
   },
   error: function (xhr, status) {
       alert(status);
   },
   success: function(response) {
-      //alert(response);
+      alert(response);
       //alert("Status Accepted");
       //alert(response);
-      location.reload();
+      //location.reload();
   }
 });
 }
