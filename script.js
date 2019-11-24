@@ -2,11 +2,11 @@ const imageUpload = document.getElementById('imageUpload') //assigning the uploa
 
 //adding models
 Promise.all([
-  faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
-  faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-  faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
-  faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-  faceapi.nets.faceExpressionNet.loadFromUri('/models')
+  faceapi.nets.faceRecognitionNet.loadFromUri('/f/models'),
+  faceapi.nets.faceLandmark68Net.loadFromUri('/f/models'),
+  faceapi.nets.ssdMobilenetv1.loadFromUri('/f/models'),
+  faceapi.nets.tinyFaceDetector.loadFromUri('/f/models'),
+  faceapi.nets.faceExpressionNet.loadFromUri('/f/models')
 ]).then(start)
 
 //function start 
@@ -20,6 +20,13 @@ async function start() {
   let canvas
   let name
   let expression
+  let angry
+  let disgusted
+  let fearful
+  let happy
+  let neutral
+  let sad
+  let surprised
   document.body.append('Loaded')
   imageUpload.addEventListener('change', async () => {
     if (image) image.remove()
@@ -47,7 +54,7 @@ async function start() {
     //console.log(resizedDetections2[0].expressions)
     resizedDetections2.forEach((result2,i) => {
       //console.log(resizedDetections2[i])
-      console.log(result2.expressions) //showing the expressions result in console
+      //console.log(result2.expressions) //showing the expressions result in console
       expression = result2.expressions
     }
     )
@@ -56,8 +63,34 @@ async function start() {
     faceapi.draw.drawFaceLandmarks(canvas, resizedDetections2)
     faceapi.draw.drawFaceExpressions(canvas, resizedDetections2)
     //const results2 = resizedDetections2.map(d => faceMatcher.findBestMatch(d.descriptor))
-    expression = resizedDetections2[0].expressions
+    //expression = resizedDetections2[0].expressions
     //insert(name,expression)
+    console.log(expression)
+    angry = expression.angry
+    disgusted = expression.disgusted
+    fearful = expression.fearful
+    happy = expression.happy
+    neutral = expression.neutral
+    sad = expression.sad
+    surprised = expression.surprised
+    let express
+    let i=0;
+    if(angry<1.0 && angry > 0.90){
+      express = "Angry"
+    } else if(disgusted<1.0 && disgusted > 0.90){
+      express ="Disgusted"
+    } else if(fearful<1.0 && fearful > 0.90){
+      express = "Fearful"
+    } else if(happy<1.0 && happy > 0.90){
+      express = "Happy"
+    } else if(neutral<1.0 && neutral > 0.90){
+      express = "Neutral"
+    } else if(sad<1.0 && sad > 0.90){
+      express = "Sad"
+    } else if(surprised<1.0 && surprised > 0.90){
+      express = "Surprised"
+    }
+    insert(name,express,angry,disgusted,fearful,happy,neutral,sad,surprised)
   })
 }
 
@@ -68,7 +101,7 @@ function loadLabeledImages() {
       const descriptions = []
       for (let i = 1; i <= 2; i++) {
         //fetching data from online. you can replace this with local directory
-        const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/ruhul0/Face-Detection/master/labeled_images/${label}/${i}.jpg`) 
+        const img = await faceapi.fetchImage(`/f/labeled_images/${label}/${i}.jpg`) 
         const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
         descriptions.push(detections.descriptor)
       }
@@ -78,22 +111,30 @@ function loadLabeledImages() {
   )
 }
 //api call to pass data to php page
-function insert(name,expression) {
-  $.ajax({
+//function insert(name,expression) {
+  function insert(name,express,angry,disgusted,fearful,happy,neutral,sad,surprised) {
+$.ajax({
   type: 'POST',
   url: 'insert.php',
   data: {
       name:name,
-      expression:expression
+      express:express,
+      angry:angry,
+      disgusted:disgusted,
+      fearful:fearful,
+      happy:happy,
+      neutral:neutral,
+      sad:sad,
+      surprised:surprised
   },
   error: function (xhr, status) {
       alert(status);
   },
   success: function(response) {
-      //alert(response);
+      alert(response);
       //alert("Status Accepted");
       //alert(response);
-      location.reload();
+      //location.reload();
   }
 });
 }
